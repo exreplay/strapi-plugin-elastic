@@ -61,7 +61,7 @@ Install plugin
 
 - Clone the project
 
-  - `git submodule add https://github.com/marefati110/strapi-plugin-elasticsearch.git ./elastic`
+  - `git submodule add https://github.com/exreplay/strapi-plugin-elasticsearch.git ./elastic`
 
 - Install dependencies
 
@@ -238,6 +238,44 @@ const articleId = 1;
 const article = await strapi.query('article').delete(articleData);
 
 strapi.elastic.destroy('article', { id: articleID });
+```
+
+### Transform fields
+
+Sometimes you want to transform fields in order to, for example strip markdown from text fields.
+This can be done by defining a `fieldsToTransform` object, which defines all the fields and their transformer.
+
+```js
+{
+  model: 'article',
+  pk: 'id',
+  plugin: null, // changed to true
+  enabled: true,
+  index: 'article',
+  relations: [],
+  conditions: {},
+  supportAdminPanel: true,
+  fillByResponse: true,
+  migration: false,
+  urls: [],
+  fieldsToTransfrom: {
+    elements: [
+      {
+        text: (val) => // do something with val
+      },
+      {
+        nestedField: {
+          text: (val) => // do something with val
+        },
+        nestedArray: [
+          {
+            text: (val) => // do something with val
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
 
 # Functions <a name="functions"></a>
