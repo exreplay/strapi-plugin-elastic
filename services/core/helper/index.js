@@ -38,7 +38,29 @@ module.exports = ({ env }) => ({
   models: ${JSON.stringify(modelsConfig, null, 2)}
 });`;
 
+const updateDocument = (doc, fields) => {
+  if (Array.isArray(fields)) {
+    for (const field of fields) {
+      if (Array.isArray(doc)) {
+        for (const el of doc) {
+          updateDocument(el, field);
+        }
+      }
+    }
+  } else if (!Array.isArray(fields) && typeof fields === 'object') {
+    for (const field of Object.keys(fields)) {
+      if (typeof fields[field] !== 'function') {
+        updateDocument(doc[field], fields[field]);
+      } else if (typeof fields[field] === 'function' && doc) {
+        const val = doc[field];
+        if (val) doc[field] = fields[field](val);
+      }
+    }
+  }
+};
+
 module.exports = {
+  updateDocument,
   generateMainConfig: () => {
     const rootPath = path.resolve(__dirname, '../../../../../');
     const configPath = rootPath + '/config/elasticsearch.js';

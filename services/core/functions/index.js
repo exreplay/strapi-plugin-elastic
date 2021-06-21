@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const { compareDataWithMap } = require('../helper');
+const { compareDataWithMap, updateDocument } = require('../helper');
 /* eslint-disable no-empty */
 module.exports = {
   // need refactor
@@ -78,6 +78,7 @@ module.exports = {
       //
     } else if (id && data) {
       //
+      updateDocument(data, targetModel.fieldsToTransfrom)
       const elastic = await strapi.elastic.update({
         index: targetModel.index,
         id: data[targetModel.pk || 'id'],

@@ -1,4 +1,4 @@
-const { compareDataWithMap } = require('../helper');
+const { compareDataWithMap, updateDocument } = require('../helper');
 
 const migrateModel = async (model, params = {}) => {
   // specific condition
@@ -13,10 +13,11 @@ const migrateModel = async (model, params = {}) => {
 
   let indexConfig = strapi.elastic.indicesMapping[targetModel.model];
 
-  const { indexExist } = await strapi.elastic.indices.exists({
+  const { body: indexExist } = await strapi.elastic.indices.exists({
     index: targetModel.index,
   });
 
+  
   indexConfig = indexExist ? indexConfig : null;
 
   if (
@@ -65,16 +66,21 @@ const migrateModel = async (model, params = {}) => {
     //
     const end_sql = Date.now();
     //
-    const body = await result.flatMap((doc) => [
-      {
-        index: {
-          _index: targetModel.index,
-          _id: doc[targetModel.pk || 'id'],
-          _type: '_doc',
+    const body = await result.flatMap((doc) => {
+      if (targetModel.fieldsToTransfrom) updateDocument(doc, targetModel.fieldsToTransfrom)
+
+      return [
+        {
+          index: {
+            _index: targetModel.index,
+            _id: doc[targetModel.pk || 'id'],
+            _type: '_doc',
+          },
         },
-      },
-      doc,
-    ]);
+        doc,
+      ]
+    });
+
     //
     const start_elastic = Date.now();
 
