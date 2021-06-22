@@ -278,6 +278,66 @@ This can be done by defining a `fieldsToTransform` object, which defines all the
 }
 ```
 
+### Index overwriting and settings
+
+If you want to overwrite index properties or want to set settings like ngram analyzer, you can do so by using the `indexSettings` and `indexMappings` property.
+This is usefull if you need more control over the index management.
+
+Before those settings take effect, the corresponding `[your index].index.json` file has to exist.
+Those files are generated inside the `exports/elasticsearch` folder.
+If there is not index file, do the following:
+
+1. Start your first migration for each model you like to.
+2. Stop server
+3. Start server
+
+Now the index file should exist. Now you can overwrite the index but keep in mind to first create the index, before migration.
+
+```js
+{
+  model: 'article',
+  pk: 'id',
+  plugin: null, // changed to true
+  enabled: true,
+  index: 'article',
+  relations: [],
+  conditions: {},
+  supportAdminPanel: true,
+  fillByResponse: true,
+  migration: false,
+  urls: [],
+  indexSettings: {
+    analysis: {
+      filter: {
+        autocomplete_filter: {
+          type: 'ngram',
+          min_gram: 1,
+          max_gram: 10
+        }
+      },
+      analyzer: {
+        autocomplete: { 
+          type: 'custom',
+          tokenizer: 'standard',
+          filter: [
+            'lowercase',
+            'autocomplete_filter'
+          ]
+        }
+      }
+    },
+    'index.max_ngram_diff' : 10
+  },
+  indexMappings: {
+    elements: { type: 'nested' },
+    'elements.properties.headline': {
+      analyzer: 'autocomplete', 
+      search_analyzer: 'standard'
+    },
+  }
+}
+```
+
 # Functions <a name="functions"></a>
 
 | Command                         | Description                    |           example            |

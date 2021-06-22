@@ -2,6 +2,8 @@ const _ = require('lodash');
 const {
   helper: { generateMappings, findMappingConfig },
 } = require('../services');
+const get = require('lodash/get');
+const set = require('lodash/set');
 
 module.exports = {
   fetchModels: (ctx) => {
@@ -173,7 +175,17 @@ module.exports = {
     };
 
     if (mapping || indexConfig) {
-      options.body = mapping[targetModel.index] || indexConfig;
+      const mappingsConfig = mapping[targetModel.index] || indexConfig;
+
+      for (const field in targetModel.indexMappings) {
+        const val = get(mappingsConfig.mappings.properties, field);
+        set(mappingsConfig.mappings.properties, field, { ...val, ...targetModel.indexMappings[field] });
+      }
+
+      options.body = {
+        settings: targetModel.indexSettings,
+        ...mappingsConfig
+      };
     }
 
     await strapi.elastic.indices.create(options);
